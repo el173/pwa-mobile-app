@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useRef} from 'react';
 import {
   View,
   SafeAreaView,
@@ -15,6 +15,7 @@ import {
   useColorScheme,
   ActivityIndicator,
   Alert,
+  Button,
 } from 'react-native';
 import WebView from 'react-native-webview';
 
@@ -24,6 +25,8 @@ const STATIC_WEB_URL = 'http://localhost:3000';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
+
+  const webViewRef = useRef(null);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -39,18 +42,26 @@ const App = () => {
     Alert.alert(message.nativeEvent.data);
   };
 
+  const sendMessage = () => {
+    if (webViewRef.current) {
+      webViewRef.current.postMessage('Hi from Mobile');
+    }
+  };
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
+      <Button title={'Hello'} onPress={sendMessage} />
       <View style={styles.container}>
         <WebView
           source={{uri: STATIC_WEB_URL}}
           startInLoadingState={true}
           renderLoading={() => <ActivityIndicator />}
           onMessage={handleMessage}
+          ref={webViewRef} // Assign webview ref to the `webViewRef` variable while initial rendering
           onError={syntheticEvent => {
             const {nativeEvent} = syntheticEvent;
             console.warn('WebView error: ', nativeEvent);
